@@ -1,0 +1,75 @@
+name: Deploy to AWS Lightsail
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install Lightsail plugin
+        run: |
+          curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl" \
+            -o /usr/local/bin/lightsailctl
+          chmod +x /usr/local/bin/lightsailctl
+
+      - name: Build Docker image
+        working-directory: ./engsoc-cheque
+        run: docker build -t engsoc-cheque:latest .
+
+      - name: Push to Lightsail container registry
+        run: |
+          aws lightsail push-container-image \
+            --service-name engsoc-cheque \
+            --label latest \
+            --image engsoc-cheque:latest
+
+      - name: Get pushed image name
+        id: image
+        run: |
+          IMAGE=$(aws lightsail get-container-images --service-name engsoc-cheque \
+            --query 'containerImages[0].image' --output text)
+          echo "name=$IMAGE" >> $GITHUB_OUTPUT
+
+      - name: Deploy container
+        run: |
+          aws lightsail create-container-service-deployment \
+            --service-name engsoc-cheque \
+            --containers "{
+              \"app\": {
+                \"image\": \"${{ steps.image.outputs.name }}\",
+                \"ports\": {\"3000\": \"HTTP\"},
+                \"environment\": {
+                  \"NODE_ENV\": \"production\",
+                  \"NEXTAUTH_URL\": \"${{ secrets.NEXTAUTH_URL }}\",
+                  \"NEXTAUTH_SECRET\": \"${{ secrets.NEXTAUTH_SECRET }}\",
+                  \"DATABASE_URL\": \"${{ secrets.DATABASE_URL }}\",
+                  \"AWS_ACCESS_KEY_ID\": \"${{ secrets.AWS_TEXTRACT_KEY_ID }}\",
+                  \"AWS_SECRET_ACCESS_KEY\": \"${{ secrets.AWS_TEXTRACT_SECRET }}\",
+                  \"AWS_REGION\": \"us-east-1\",
+                  \"SMTP_HOST\": \"${{ secrets.SMTP_HOST }}\",
+                  \"SMTP_PORT\": \"587\",
+                  \"SMTP_USER\": \"${{ secrets.SMTP_USER }}\",
+                  \"SMTP_PASS\": \"${{ secrets.SMTP_PASS }}\",
+                  \"SMTP_FROM\": \"${{ secrets.SMTP_FROM }}\",
+                  \"NEXT_PUBLIC_APP_URL\": \"${{ secrets.NEXTAUTH_URL }}\"
+                }
+              }
+            }" \
+            --public-endpoint "{
+              \"containerName\": \"app\",
+              \"containerPort\": 3000,
+              \"healthCheck\": {\"path\": \"/api/health\"}
+            }"
