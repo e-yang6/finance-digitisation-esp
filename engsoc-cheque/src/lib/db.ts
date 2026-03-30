@@ -7,8 +7,17 @@ declare global {
 }
 
 function createPool() {
+  const databaseUrl = process.env.DATABASE_URL;
+  const normalizedConnectionString = databaseUrl
+    ? (() => {
+        const url = new URL(databaseUrl);
+        url.searchParams.delete('sslmode');
+        return url.toString();
+      })()
+    : undefined;
+
   return new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: normalizedConnectionString,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
     max: 10,
     idleTimeoutMillis: 30000,
