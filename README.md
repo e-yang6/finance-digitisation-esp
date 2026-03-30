@@ -249,4 +249,3 @@ Harmless. Ignore it.
 
 ### Login fails with "Invalid credentials"
 Make sure the seed ran successfully (you should see `🎉 Seeding complete!`). Use the exact emails and passwords from the [Test Accounts](#test-accounts) section.
-
