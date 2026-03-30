@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     await pool.query(
       'INSERT INTO users (name, email, password_hash, committee, role) VALUES ($1, $2, $3, $4, $5)',
-      [data.name, data.email, passwordHash, data.committee, data.role]
+      [data.name, data.email, passwordHash, data.committee || null, data.role]
     );
 
     return Response.json({ message: 'Account created successfully.' }, { status: 201 });

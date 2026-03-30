@@ -28,9 +28,19 @@ export default function RegisterPage() {
     committee: '',
     role: 'applicant' as 'applicant' | 'officer',
   });
+  const isOfficer = form.role === 'officer';
 
   function update(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setError('');
+  }
+
+  function updateRole(role: 'applicant' | 'officer') {
+    setForm((prev) => ({
+      ...prev,
+      role,
+      committee: role === 'officer' ? '' : prev.committee,
+    }));
     setError('');
   }
 
@@ -139,21 +149,10 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="committee">Committee / Club</Label>
-                <Input
-                  id="committee"
-                  placeholder="ECE Club"
-                  value={form.committee}
-                  onChange={(e) => update('committee', e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
                 <Label>Role</Label>
                 <Select
                   value={form.role}
-                  onValueChange={(v) => update('role', v as 'applicant' | 'officer')}
+                  onValueChange={(value) => updateRole(value as 'applicant' | 'officer')}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -164,6 +163,19 @@ export default function RegisterPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {!isOfficer && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="committee">Committee / Club</Label>
+                  <Input
+                    id="committee"
+                    placeholder="ECE Club"
+                    value={form.committee}
+                    onChange={(e) => update('committee', e.target.value)}
+                    required
+                  />
+                </div>
+              )}
 
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-md p-3">

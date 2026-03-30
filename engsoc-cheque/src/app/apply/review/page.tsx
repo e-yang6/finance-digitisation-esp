@@ -92,6 +92,7 @@ export default function ReviewSubmitPage() {
             </div>
             <h1 className="text-white font-bold text-lg">EngSoc Cheque Requisition</h1>
           </div>
+          <SignOutButton />
         </header>
 
         <div className="flex-1 flex items-center justify-center p-6">

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const registerRoleSchema = z.enum(['applicant', 'officer']);
+
 export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z
@@ -10,9 +12,15 @@ export const registerSchema = z.object({
       'Registration is restricted to UofT email addresses (@utoronto.ca or @mail.utoronto.ca)'
     ),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  committee: z.string().min(1, 'Committee/Club is required'),
-  role: z.enum(['applicant', 'officer']).default('applicant'),
-});
+  committee: z.string().trim().optional(),
+  role: registerRoleSchema.default('applicant'),
+}).refine(
+  (data) => data.role === 'officer' || Boolean(data.committee),
+  {
+    message: 'Committee/Club is required',
+    path: ['committee'],
+  }
+);
 
 export const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
