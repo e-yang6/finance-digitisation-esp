@@ -44,32 +44,59 @@ jobs:
           echo "name=$IMAGE" >> $GITHUB_OUTPUT
 
       - name: Deploy container
+        env:
+          IMAGE_NAME: ${{ steps.image.outputs.name }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AWS_TEXTRACT_KEY_ID: ${{ secrets.AWS_TEXTRACT_KEY_ID }}
+          AWS_TEXTRACT_SECRET: ${{ secrets.AWS_TEXTRACT_SECRET }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
         run: |
-          aws lightsail create-container-service-deployment \
-            --service-name engsoc-cheque \
-            --containers "{
-              \"app\": {
-                \"image\": \"${{ steps.image.outputs.name }}\",
-                \"ports\": {\"3000\": \"HTTP\"},
-                \"environment\": {
-                  \"NODE_ENV\": \"production\",
-                  \"NEXTAUTH_URL\": \"${{ secrets.NEXTAUTH_URL }}\",
-                  \"NEXTAUTH_SECRET\": \"${{ secrets.NEXTAUTH_SECRET }}\",
-                  \"DATABASE_URL\": \"${{ secrets.DATABASE_URL }}\",
-                  \"AWS_ACCESS_KEY_ID\": \"${{ secrets.AWS_TEXTRACT_KEY_ID }}\",
-                  \"AWS_SECRET_ACCESS_KEY\": \"${{ secrets.AWS_TEXTRACT_SECRET }}\",
-                  \"AWS_REGION\": \"us-east-1\",
-                  \"SMTP_HOST\": \"${{ secrets.SMTP_HOST }}\",
-                  \"SMTP_PORT\": \"587\",
-                  \"SMTP_USER\": \"${{ secrets.SMTP_USER }}\",
-                  \"SMTP_PASS\": \"${{ secrets.SMTP_PASS }}\",
-                  \"SMTP_FROM\": \"${{ secrets.SMTP_FROM }}\",
-                  \"NEXT_PUBLIC_APP_URL\": \"${{ secrets.NEXTAUTH_URL }}\"
+          CONTAINERS_JSON=$(jq -n \
+            --arg image "$IMAGE_NAME" \
+            --arg nextauth_url "$NEXTAUTH_URL" \
+            --arg nextauth_secret "$NEXTAUTH_SECRET" \
+            --arg database_url "$DATABASE_URL" \
+            --arg textract_key_id "$AWS_TEXTRACT_KEY_ID" \
+            --arg textract_secret "$AWS_TEXTRACT_SECRET" \
+            --arg smtp_host "$SMTP_HOST" \
+            --arg smtp_user "$SMTP_USER" \
+            --arg smtp_pass "$SMTP_PASS" \
+            --arg smtp_from "$SMTP_FROM" \
+            '{
+              app: {
+                image: $image,
+                ports: {"3000": "HTTP"},
+                environment: {
+                  NODE_ENV: "production",
+                  NEXTAUTH_URL: $nextauth_url,
+                  NEXTAUTH_SECRET: $nextauth_secret,
+                  DATABASE_URL: $database_url,
+                  AWS_ACCESS_KEY_ID: $textract_key_id,
+                  AWS_SECRET_ACCESS_KEY: $textract_secret,
+                  AWS_REGION: "us-east-1",
+                  SMTP_HOST: $smtp_host,
+                  SMTP_PORT: "587",
+                  SMTP_USER: $smtp_user,
+                  SMTP_PASS: $smtp_pass,
+                  SMTP_FROM: $smtp_from,
+                  NEXT_PUBLIC_APP_URL: $nextauth_url
                 }
               }
-            }" \
-            --public-endpoint "{
-              \"containerName\": \"app\",
-              \"containerPort\": 3000,
-              \"healthCheck\": {\"path\": \"/api/health\"}
-            }"
+            }')
+
+          PUBLIC_ENDPOINT_JSON=$(jq -n \
+            '{
+              containerName: "app",
+              containerPort: 3000,
+              healthCheck: {path: "/api/health"}
+            }')
+
+          aws lightsail create-container-service-deployment \
+            --service-name engsoc-cheque \
+            --containers "$CONTAINERS_JSON" \
+            --public-endpoint "$PUBLIC_ENDPOINT_JSON"
