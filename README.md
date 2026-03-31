@@ -46,5 +46,3 @@ engsoc-cheque/
 | OCR | Amazon Textract |
 | Auth | NextAuth.js v5 (credentials provider) |
 | Email | Nodemailer + SMTP |
-
----
