@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 import { pool } from '@/lib/db';
+import { sendApprovalNotification } from '@/lib/email';
 
 export async function PATCH(
   request: NextRequest,
@@ -26,7 +27,11 @@ export async function PATCH(
 
     // Check submission exists
     const { rows: subRows } = await pool.query(
-      'SELECT id, status, review_started_at FROM submissions WHERE id = $1',
+      `SELECT s.id, s.status, s.review_started_at, s.reference_number, s.vendor, s.total,
+              u.email, u.name
+       FROM submissions s
+       JOIN users u ON s.applicant_id = u.id
+       WHERE s.id = $1`,
       [id]
     );
     if (subRows.length === 0) {
@@ -96,6 +101,14 @@ export async function PATCH(
          WHERE id = $2`,
         [reviewStartedAt, id]
       );
+
+      sendApprovalNotification({
+        to: submission.email,
+        name: submission.name,
+        referenceNumber: submission.reference_number,
+        vendor: submission.vendor,
+        total: parseFloat(submission.total),
+      }).catch((err) => console.error('Approval email error:', err));
     }
 
     return Response.json({ message: 'Signature added successfully.' });

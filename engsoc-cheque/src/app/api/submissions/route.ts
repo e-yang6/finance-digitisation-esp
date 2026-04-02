@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { pool } from '@/lib/db';
 import { submissionSchema } from '@/lib/validations';
 import { generateReferenceNumber } from '@/lib/server-utils';
-import { sendSubmissionConfirmation } from '@/lib/email';
+import { sendSubmissionConfirmation, sendOfficerNewSubmissionNotification } from '@/lib/email';
 import { ZodError } from 'zod';
 
 export async function POST(request: NextRequest) {
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
       await client.query('COMMIT');
 
-      // Send confirmation email (non-blocking)
+      // Send confirmation email to applicant (non-blocking)
       sendSubmissionConfirmation({
         to: session.user.email,
         name: session.user.name,
@@ -69,6 +69,23 @@ export async function POST(request: NextRequest) {
         vendor: data.vendor,
         total: data.total,
       }).catch((err) => console.error('Email send error:', err));
+
+      // Notify all officers (non-blocking)
+      pool.query(`SELECT email FROM users WHERE role = 'officer'`)
+        .then(({ rows: officers }) =>
+          Promise.allSettled(
+            officers.map((officer) =>
+              sendOfficerNewSubmissionNotification({
+                to: officer.email,
+                applicantName: session.user.name,
+                referenceNumber,
+                vendor: data.vendor,
+                total: data.total,
+              })
+            )
+          )
+        )
+        .catch((err) => console.error('Officer notification error:', err));
 
       return Response.json({ referenceNumber, submissionId }, { status: 201 });
     } catch (err) {
