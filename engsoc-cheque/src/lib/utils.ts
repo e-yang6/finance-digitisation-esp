@@ -39,6 +39,6 @@ export function formatDateTime(date: string | Date): string {
   });
 }
 
-export function isUofTEmail(email: string): boolean {
-  return /^.+@(mail\.)?utoronto\.ca$/i.test(email);
+export function isGmailEmail(email: string): boolean {
+  return /^.+@gmail\.com$/i.test(email);
 }

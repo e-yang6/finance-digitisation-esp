@@ -56,24 +56,24 @@ async function seed() {
     );
     DELETE FROM submissions WHERE reference_number LIKE 'CR-2026-%';
     DELETE FROM users WHERE email IN (
-      'sarah.mitchell@utoronto.ca',
-      'david.park@utoronto.ca',
-      'alex.chen@mail.utoronto.ca',
-      'jamie.park@mail.utoronto.ca',
-      'liam.hartley@mail.utoronto.ca',
-      'priya.nair@mail.utoronto.ca'
+      'sarah.mitchell@gmail.com',
+      'david.park@gmail.com',
+      'alex.chen@gmail.com',
+      'jamie.park@gmail.com',
+      'liam.hartley@gmail.com',
+      'priya.nair@gmail.com'
     );
   `);
 
   // Insert users
   await pool.query(`
     INSERT INTO users (id, name, email, password_hash, committee, role) VALUES
-    ('a1b2c3d4-0001-0001-0001-000000000001', 'Sarah Mitchell', 'sarah.mitchell@utoronto.ca', $1, 'VP Finance', 'officer'),
-    ('a1b2c3d4-0002-0002-0002-000000000002', 'David Park', 'david.park@utoronto.ca', $1, 'Finance Committee', 'officer'),
-    ('b1b2c3d4-0001-0001-0001-000000000001', 'Alex Chen', 'alex.chen@mail.utoronto.ca', $2, 'ECE Club', 'applicant'),
-    ('b1b2c3d4-0002-0002-0002-000000000002', 'Jamie Park', 'jamie.park@mail.utoronto.ca', $2, 'Hi-Skule', 'applicant'),
-    ('b1b2c3d4-0003-0003-0003-000000000003', 'Liam Hartley', 'liam.hartley@mail.utoronto.ca', $2, 'Levy Funding', 'applicant'),
-    ('b1b2c3d4-0004-0004-0004-000000000004', 'Priya Nair', 'priya.nair@mail.utoronto.ca', $2, 'Skule Nite', 'applicant')
+    ('a1b2c3d4-0001-0001-0001-000000000001', 'Sarah Mitchell', 'sarah.mitchell@gmail.com', $1, 'VP Finance', 'officer'),
+    ('a1b2c3d4-0002-0002-0002-000000000002', 'David Park', 'david.park@gmail.com', $1, 'Finance Committee', 'officer'),
+    ('b1b2c3d4-0001-0001-0001-000000000001', 'Alex Chen', 'alex.chen@gmail.com', $2, 'ECE Club', 'applicant'),
+    ('b1b2c3d4-0002-0002-0002-000000000002', 'Jamie Park', 'jamie.park@gmail.com', $2, 'Hi-Skule', 'applicant'),
+    ('b1b2c3d4-0003-0003-0003-000000000003', 'Liam Hartley', 'liam.hartley@gmail.com', $2, 'Levy Funding', 'applicant'),
+    ('b1b2c3d4-0004-0004-0004-000000000004', 'Priya Nair', 'priya.nair@gmail.com', $2, 'Skule Nite', 'applicant')
   `, [officerHash, applicantHash]);
   console.log('✅ Users inserted');
 
@@ -137,9 +137,9 @@ async function seed() {
   await pool.end();
   console.log('\n🎉 Seeding complete!');
   console.log('\nTest accounts:');
-  console.log('  Officer:   sarah.mitchell@utoronto.ca / officer123');
-  console.log('  Officer:   david.park@utoronto.ca / officer123');
-  console.log('  Applicant: alex.chen@mail.utoronto.ca / applicant123');
+  console.log('  Officer:   sarah.mitchell@gmail.com / officer123');
+  console.log('  Officer:   david.park@gmail.com / officer123');
+  console.log('  Applicant: alex.chen@gmail.com / applicant123');
 }
 
 seed().catch((err) => {

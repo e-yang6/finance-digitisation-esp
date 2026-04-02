@@ -91,7 +91,7 @@ export default function RegisterPage() {
             <div className="mb-6 text-center">
               <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
               <p className="text-sm text-gray-500 mt-1">
-                UofT email required
+                Gmail address required
               </p>
             </div>
 
@@ -112,13 +112,13 @@ export default function RegisterPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@mail.utoronto.ca"
+                  placeholder="you@gmail.com"
                   value={form.email}
                   onChange={(e) => update('email', e.target.value)}
                   required
                 />
                 <p className="text-xs text-gray-400">
-                  Must be a @utoronto.ca or @mail.utoronto.ca address
+                  Must be a @gmail.com address
                 </p>
               </div>
 

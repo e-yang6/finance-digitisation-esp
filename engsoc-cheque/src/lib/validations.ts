@@ -8,8 +8,8 @@ export const registerSchema = z.object({
     .string()
     .email('Invalid email address')
     .refine(
-      (email) => /^.+@(mail\.)?utoronto\.ca$/i.test(email),
-      'Registration is restricted to UofT email addresses (@utoronto.ca or @mail.utoronto.ca)'
+      (email) => /^.+@gmail\.com$/i.test(email),
+      'Registration is restricted to Gmail addresses (@gmail.com)'
     ),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   committee: z.string().trim().optional(),
