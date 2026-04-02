@@ -255,7 +255,7 @@ export async function processReceipt(imageBuffer: Buffer): Promise<OcrResult> {
     lineItems.reduce((sum, item) => sum + item.amount, 0);
   const computedHst =
     hst || lineItems.reduce((sum, item) => sum + (item.hst || 0), 0);
-  const computedTotal = total || computedSubtotal + computedHst;
+  const computedTotal = computedSubtotal + computedHst;
 
   return {
     vendor,
